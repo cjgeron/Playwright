@@ -1,0 +1,47 @@
+name: Playwright UI Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  ui-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Activity11.TestStructureCi.slnx
+
+      - name: Build solution
+        run: dotnet build Activity11.TestStructureCi.slnx --no-restore
+
+      - name: Install Playwright browsers
+        working-directory: Activity11.TestStructureCi.Tests
+        run: pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
+
+      - name: Run Playwright tests
+        run: dotnet test Activity11.TestStructureCi.slnx --no-build --logger "trx;LogFileName=test-results.trx"
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            **/TestResults/*.trx
+            **/artifacts/screenshots/**
+            **/artifacts/videos/**
+            **/artifacts/traces/**
