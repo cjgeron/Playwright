@@ -1,0 +1,33 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: trainingapp-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - trainingapp-mongo-data:/data/db
+
+  backend:
+    image: crisperando/trainingapp-backend:1.0
+    container_name: trainingapp-backend
+    ports:
+      - "3001:5000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/trainingapp
+      - JWT_SECRET=trainingapp_secret_key
+      - PORT=5000
+    depends_on:
+      - mongo
+
+  frontend:
+    image: crisperando/trainingapp-frontend:1.2
+    container_name: trainingapp-frontend
+    ports:
+      - "3000:80"
+    environment:
+      VITE_API_BASE_URL: http://backend:3001/api
+    depends_on:
+      - backend
+
+volumes:
+  trainingapp-mongo-data:

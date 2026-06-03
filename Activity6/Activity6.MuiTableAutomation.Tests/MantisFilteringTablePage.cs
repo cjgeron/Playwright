@@ -144,4 +144,15 @@ public class MantisFilteringTablePage
             ).ToBeVisibleAsync();
         }
     }
+
+    public async Task Should_Value_Within_Range()
+    {
+        var valueText = await _page
+                .GetByRole(AriaRole.Textbox)
+                .InputValueAsync();
+
+        int value = int.Parse(valueText);
+
+        Assert.InRange(value, 1, 100);
+    }
 }
